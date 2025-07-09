@@ -2,7 +2,7 @@
 
 Here is the Deployed site link: https://adaptnxt-ecommerce-frontend.onrender.com/
 
-I have deplyoed this site using Render, both frontend and backend I have deployed using Render only.
+I have deplyoed this site using Render.
 
 This is a full-stack web application built as part of the AdaptNxt assignment. It simulates a simple e-commerce system with user authentication, product listing, cart management, and admin controls.
 
