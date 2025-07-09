@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 # Simple E-Commerce API Web Application
 
 This is a full-stack web application built as part of the AdaptNxt assignment. It simulates a simple e-commerce system with user authentication, product listing, cart management, and admin controls.
@@ -104,6 +102,4 @@ Open the file `ecommerce-ui-final-updated.html` in your browser and use the appl
 
 Developed as part of the AdaptNxt assignment.
 
-=======
-# adaptnxt-ecommerce
->>>>>>> b9a97368a9871e6bf2dd3ddecabb0ebad46db9da
+
