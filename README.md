@@ -104,6 +104,4 @@ Open the file `ecommerce-ui-final-updated.html` in your browser and use the appl
 
 Developed as part of the AdaptNxt assignment.
 
-=======
-# adaptnxt-ecommerce
->>>>>>> b9a97368a9871e6bf2dd3ddecabb0ebad46db9da
+
