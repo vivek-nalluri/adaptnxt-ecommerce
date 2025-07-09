@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 # Simple E-Commerce API Web Application
 
 This is a full-stack web application built as part of the AdaptNxt assignment. It simulates a simple e-commerce system with user authentication, product listing, cart management, and admin controls.
