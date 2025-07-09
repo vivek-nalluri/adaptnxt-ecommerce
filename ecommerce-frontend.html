@@ -1,0 +1,289 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Simple E-Commerce</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #333; }
+    header { background: #1e293b; color: white; padding: 20px; text-align: center; }
+    .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+    .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 8px rgba(0,0,0,0.05); margin-bottom: 30px; }
+    input, select, button {
+      padding: 10px;
+      margin: 8px 0;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 15px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover { background: #1d4ed8; }
+    .product, .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding: 10px 0;
+    }
+    .product-actions, .cart-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .qty-btn {
+      width: 30px;
+      height: 30px;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 50%;
+    }
+    .pagination { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+    .bill-summary { margin-top: 15px; padding-top: 10px; border-top: 1px solid #ccc; font-weight: bold; }
+    .footer { text-align: center; margin: 40px 0 20px; }
+    .footer button {
+      padding: 10px 20px;
+      background: #ef4444;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<header><h1>Simple E-Commerce</h1></header>
+
+<div class="container">
+  <div id="authSection" class="box">
+    <div id="registerBox">
+      <h2>Register</h2>
+      <input id="rname" placeholder="Name">
+      <input id="remail" placeholder="Email">
+      <input id="rpass" type="password" placeholder="Password">
+      <select id="rrole">
+        <option value="customer">Customer</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button onclick="register()">Register</button>
+      <p>Already have an account? <a onclick="toggleAuth()" style="cursor:pointer; color:#2563eb;">Login</a></p>
+    </div>
+    <div id="loginBox" style="display:none;">
+      <h2>Login</h2>
+      <input id="lemail" placeholder="Email">
+      <input id="lpass" type="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+      <p>Don't have an account? <a onclick="toggleAuth()" style="cursor:pointer; color:#2563eb;">Register</a></p>
+    </div>
+  </div>
+
+  <div id="productSection" class="box" style="display:none;">
+    <h2>Products</h2>
+    <input id="searchBox" placeholder="Search products..." onkeyup="loadProducts(1)">
+    <div id="productList"></div>
+    <div class="pagination">
+      <button onclick="changePage(-1)">Prev</button>
+      <span id="pageNum">1</span>
+      <button onclick="changePage(1)">Next</button>
+    </div>
+  </div>
+
+  <div id="cartSection" class="box" style="display:none;">
+    <h2>Cart</h2>
+    <div id="cartItems"></div>
+    <div id="cartBill" class="bill-summary"></div>
+    <button onclick="placeOrder()">Place Order</button>
+  </div>
+
+  <div id="adminPanel" class="box" style="display:none;">
+    <h2>Admin Panel</h2>
+    <input id="pname" placeholder="Product name">
+    <input id="pcat" placeholder="Category">
+    <input id="pprice" type="number" placeholder="Price">
+    <input id="pstock" type="number" placeholder="Stock">
+    <button onclick="addProduct()">Add Product</button>
+  </div>
+
+  <div class="footer" id="logoutFooter" style="display:none;">
+    <button onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<script>
+let token = '', userRole = '', currentPage = 1, lastPage = false;
+
+const api = 'http://localhost:5000/api';
+
+function toggleAuth() {
+  const reg = document.getElementById('registerBox');
+  const log = document.getElementById('loginBox');
+  reg.style.display = reg.style.display === 'none' ? 'block' : 'none';
+  log.style.display = log.style.display === 'none' ? 'block' : 'none';
+}
+
+function register() {
+  fetch(api + '/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: rname.value,
+      email: remail.value,
+      password: rpass.value,
+      role: rrole.value
+    })
+  }).then(res => res.json()).then(data => alert(data.message || 'Registered'));
+}
+
+function login() {
+  fetch(api + '/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: lemail.value,
+      password: lpass.value
+    })
+  }).then(res => res.json()).then(data => {
+    if (data.token) {
+      token = data.token;
+      userRole = data.user.role;
+      document.getElementById('authSection').style.display = 'none';
+      document.getElementById('productSection').style.display = 'block';
+      document.getElementById('cartSection').style.display = userRole === 'customer' ? 'block' : 'none';
+      document.getElementById('adminPanel').style.display = userRole === 'admin' ? 'block' : 'none';
+      document.getElementById('logoutFooter').style.display = 'block';
+      loadProducts(1);
+      if (userRole === 'customer') loadCart();
+    } else alert('Login failed');
+  });
+}
+
+function logout() {
+  token = '';
+  location.reload();
+}
+
+function changePage(delta) {
+  if (delta === 1 && lastPage) return;
+  currentPage += delta;
+  if (currentPage < 1) currentPage = 1;
+  document.getElementById('pageNum').innerText = currentPage;
+  loadProducts(currentPage);
+}
+
+function loadProducts(page = 1) {
+  const search = document.getElementById('searchBox').value;
+  fetch(`${api}/products?search=${search}&page=${page}&limit=5`)
+    .then(res => res.json())
+    .then(data => {
+      lastPage = data.length < 5;
+      document.getElementById('productList').innerHTML = data.map(p => `
+        <div class="product">
+          <span>${p.name} - $${p.price}</span>
+          <div class="product-actions">
+            ${userRole === 'customer' ? `<button onclick="addToCart('${p._id}')">Add</button>` : ''}
+            ${userRole === 'admin' ? `
+              <button onclick="deleteProduct('${p._id}')">Delete</button>
+              <button onclick="updateProductPrompt('${p._id}', '${p.name}', '${p.category}', ${p.price}, ${p.stock})">Edit</button>` : ''}
+          </div>
+        </div>`).join('');
+    });
+}
+
+function addToCart(pid) {
+  fetch(`${api}/cart`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ productId: pid, quantity: 1 })
+  }).then(() => loadCart());
+}
+
+function loadCart() {
+  fetch(`${api}/cart`, {
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(res => res.json()).then(cart => {
+    let total = 0;
+    document.getElementById('cartItems').innerHTML = cart.items.map(i => {
+      total += i.quantity * i.productId.price;
+      return `
+      <div class="cart-item">
+        <span>${i.productId.name} ($${i.productId.price})</span>
+        <div class="cart-actions">
+          <button class="qty-btn" onclick="updateQty('${i.productId._id}', ${i.quantity - 1})">-</button>
+          <span>${i.quantity}</span>
+          <button class="qty-btn" onclick="updateQty('${i.productId._id}', ${i.quantity + 1})">+</button>
+          <button onclick="removeItem('${i.productId._id}')">Remove</button>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('cartBill').innerText = 'Total: $' + total.toFixed(2);
+  });
+}
+
+function updateQty(pid, qty) {
+  if (qty < 1) return;
+  fetch(`${api}/cart`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ productId: pid, quantity: qty })
+  }).then(() => loadCart());
+}
+
+function removeItem(pid) {
+  fetch(`${api}/cart/${pid}`, {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(() => loadCart());
+}
+
+function placeOrder() {
+  fetch(`${api}/orders`, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(res => res.json()).then(data => {
+    alert('Order placed successfully! Invoice generated below.');
+    loadCart();
+  });
+}
+
+function addProduct() {
+  fetch(`${api}/products`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({
+      name: pname.value,
+      category: pcat.value,
+      price: parseFloat(pprice.value),
+      stock: parseInt(pstock.value)
+    })
+  }).then(() => loadProducts(1));
+}
+
+function deleteProduct(id) {
+  fetch(`${api}/products/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: 'Bearer ' + token }
+  }).then(() => loadProducts(currentPage));
+}
+
+function updateProductPrompt(id, name, category, price, stock) {
+  const newName = prompt("Update name:", name);
+  const newCat = prompt("Update category:", category);
+  const newPrice = prompt("Update price:", price);
+  const newStock = prompt("Update stock:", stock);
+  fetch(`${api}/products/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ name: newName, category: newCat, price: parseFloat(newPrice), stock: parseInt(newStock) })
+  }).then(() => loadProducts(currentPage));
+}
+</script>
+
+</body>
+</html>
