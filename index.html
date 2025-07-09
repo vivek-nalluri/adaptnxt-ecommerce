@@ -262,9 +262,15 @@ function addProduct() {
       price: parseFloat(pprice.value),
       stock: parseInt(pstock.value)
     })
-  }).then(() => loadProducts(1));
+  }).then(res => res.json()).then(data => {
+    if (data.message && data.message.includes("already exists")) {
+      alert(data.message);
+    } else {
+      alert("Product added successfully!");
+      loadProducts(1);
+    }
+  });
 }
-
 function deleteProduct(id) {
   fetch(`${api}/products/${id}`, {
     method: 'DELETE',

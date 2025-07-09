@@ -22,9 +22,16 @@ exports.getProducts = async (req, res) => {
   }
 };
 
-// Admin - Add product
+// Admin - Add product (name must be unique)
 exports.createProduct = async (req, res) => {
   try {
+    const { name } = req.body;
+
+    const existingProduct = await Product.findOne({ name });
+    if (existingProduct) {
+      return res.status(400).json({ message: 'Product with this name already exists' });
+    }
+
     const product = await Product.create(req.body);
     res.status(201).json(product);
   } catch (err) {
