@@ -90,25 +90,45 @@ function register() {
 }
 
 function login() {
+    const email = document.getElementById('lemail').value;
+    const password = document.getElementById('lpass').value;
+
+    // Basic client-side validation
+    if (!email || !password) {
+        alert('Please enter both email and password.');
+        return;
+    }
+
     fetch(api + '/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            email: lemail.value,
-            password: lpass.value
-        })
-    }).then(res => res.json()).then(data => {
-        if (data.token) {
-            token = data.token;
-            userRole = data.user.role;
-            document.getElementById('authSection').style.display = 'none';
-            document.getElementById('productSection').style.display = 'block';
-            document.getElementById('cartSection').style.display = userRole === 'customer' ? 'block' : 'none';
-            document.getElementById('adminPanel').style.display = userRole === 'admin' ? 'block' : 'none';
-            document.getElementById('logoutFooter').style.display = 'block';
-            loadProducts(1);
-            if (userRole === 'customer') loadCart();
-        } else alert('Login failed');
+        body: JSON.stringify({ email, password })
+    })
+    .then(res => {
+        // Check for non-2xx HTTP status codes
+        if (!res.ok) {
+            return res.json().then(errorData => {
+                throw new Error(errorData.message || 'Login failed.');
+            });
+        }
+        return res.json();
+    })
+    .then(data => {
+        token = data.token;
+        userRole = data.user.role;
+        document.getElementById('authSection').style.display = 'none';
+        document.getElementById('productSection').style.display = 'block';
+        document.getElementById('cartSection').style.display = userRole === 'customer' ? 'block' : 'none';
+        document.getElementById('adminPanel').style.display = userRole === 'admin' ? 'block' : 'none';
+        document.getElementById('logoutFooter').style.display = 'block';
+        loadProducts(1);
+        if (userRole === 'customer') loadCart();
+        alert('Login successful!'); // More specific success message
+    })
+    .catch(error => {
+        // Catch any network or server-side errors
+        alert(error.message);
+        console.error('Error:', error);
     });
 }
 
