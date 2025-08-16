@@ -10,6 +10,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// --- ADD THIS NEW ROOT ROUTE ---
+app.get('/', (req, res) => {
+  res.send('Welcome to the E-commerce API!');
+});
+// ------------------------------
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/product'));
@@ -20,16 +26,16 @@ app.use('/api/orders', require('./routes/order'));
 // Ensure your .env file has MONGO_URI like:
 // MONGO_URI="mongodb+srv://user:password@cluster.mongodb.net/mydatabase?retryWrites=true&w=majority"
 mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
 .then(() => {
-  console.log('MongoDB Atlas connected successfully');
-  // Start server only after successful DB connection
-  app.listen(process.env.PORT || 5000, () => {
-    console.log(`Server running on port ${process.env.PORT || 5000}`);
-  });
+  console.log('MongoDB Atlas connected successfully');
+  // Start server only after successful DB connection
+  app.listen(process.env.PORT || 5000, () => {
+    console.log(`Server running on port ${process.env.PORT || 5000}`);
+  });
 })
 .catch(err => {
-  console.error('MongoDB connection error:', err.message);
+  console.error('MongoDB connection error:', err.message);
 });
