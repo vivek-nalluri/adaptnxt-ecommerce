@@ -1,5 +1,9 @@
 # Simple E-Commerce API Web Application
 
+Here is the Deployed site link: https://adaptnxt-ecommerce-frontend.onrender.com/
+
+I have deplyoed this site using Render.
+
 This is a full-stack web application built as part of the AdaptNxt assignment. It simulates a simple e-commerce system with user authentication, product listing, cart management, and admin controls.
 
 ---
